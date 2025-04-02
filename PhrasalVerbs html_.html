@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Empareja Phrasal Verbs 🎮</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* Clase para aciertos: color verde */
+    .matched {
+      background-color: #16a34a !important; /* Equivalente a green-600 */
+    }
+  </style>
+</head>
+<body class="bg-gray-100 text-center p-5">
+  <h1 class="text-3xl font-bold mb-4">Empareja Phrasal Verbs</h1>
+  <p class="mb-2">Empareja cada phrasal verb con su significado haciendo clic sobre ellos.</p>
+  <p class="mb-4 text-lg">Aciertos: <span id="score">0</span></p>
+
+  <div id="gameBoard" class="flex flex-col md:flex-row justify-around mb-4">
+    <!-- Columna de Phrasal Verbs -->
+    <div id="verbs" class="w-full md:w-1/3 mb-4 md:mb-0">
+      <h2 class="text-xl font-bold mb-2">Phrasal Verbs</h2>
+      <div id="verbContainer" class="flex flex-col gap-2"></div>
+    </div>
+
+    <!-- Columna de Significados -->
+    <div id="meanings" class="w-full md:w-1/3">
+      <h2 class="text-xl font-bold mb-2">Significados</h2>
+      <div id="meaningContainer" class="flex flex-col gap-2"></div>
+    </div>
+  </div>
+
+  <button 
+    onclick="initGame()"
+    class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+    Reiniciar Juego
+  </button>
+
+  <script>
+    // Datos de los phrasal verbs y sus significados
+    const phrasalVerbs = [
+      { id: "splash_out", text: "Splash out (on)" },
+      { id: "shop_around", text: "Shop around" },
+      { id: "go_out", text: "Go out (of fashion)" },
+      { id: "throw_on", text: "Throw on" },
+      { id: "go_with", text: "Go with" },
+      { id: "try_on", text: "Try on" },
+      { id: "stock_up", text: "Stock up (on)" }
+    ];
+
+    const meanings = [
+      { id: "splash_out", text: "💰 Gastar mucho dinero en algo." },
+      { id: "shop_around", text: "🛒 Comparar precios en varias tiendas." },
+      { id: "go_out", text: "👗 Dejar de ser popular o estar de moda." },
+      { id: "throw_on", text: "👕 Ponerse ropa rápidamente sin pensarlo." },
+      { id: "go_with", text: "🎨 Combinar o complementar en términos de estilo." },
+      { id: "try_on", text: "👖 Probarse ropa para ver si queda bien." },
+      { id: "stock_up", text: "📦 Comprar una gran cantidad de algo." }
+    ];
+
+    let selectedVerbId = null; // Guarda el id del phrasal verb seleccionado
+    let score = 0;
+
+    // Función que baraja un array
+    function shuffle(array) {
+      return array.sort(() => Math.random() - 0.5);
+    }
+
+    // Inicializa (o reinicia) el juego
+    function initGame() {
+      // Reinicia variables y marcador
+      selectedVerbId = null;
+      score = 0;
+      document.getElementById("score").textContent = score;
+
+      // Limpia los contenedores
+      document.getElementById("verbContainer").innerHTML = "";
+      document.getElementById("meaningContainer").innerHTML = "";
+
+      // Clona y baraja los arrays: ambas columnas se generan en orden aleatorio
+      let verbsShuffled = shuffle([...phrasalVerbs]);
+      let meaningsShuffled = shuffle([...meanings]);
+
+      // Genera la columna de Phrasal Verbs
+      verbsShuffled.forEach(item => {
+        let btn = document.createElement("button");
+        btn.textContent = item.text;
+        btn.setAttribute("data-id", item.id);
+        btn.className = "verbBtn bg-purple-500 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition-colors";
+        btn.onclick = () => selectVerb(btn);
+        document.getElementById("verbContainer").appendChild(btn);
+      });
+
+      // Genera la columna de Significados
+      meaningsShuffled.forEach(item => {
+        let btn = document.createElement("button");
+        btn.textContent = item.text;
+        btn.setAttribute("data-id", item.id);
+        btn.className = "meaningBtn bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors";
+        btn.onclick = () => selectMeaning(btn);
+        document.getElementById("meaningContainer").appendChild(btn);
+      });
+    }
+
+    // Función para seleccionar un phrasal verb
+    function selectVerb(btn) {
+      // Si ya está emparejado, ignora
+      if (btn.classList.contains("matched")) return;
+
+      // Deselecciona cualquier otro verbo previamente seleccionado
+      const allVerbs = document.querySelectorAll("#verbContainer button");
+      allVerbs.forEach(b => b.classList.remove("ring-4", "ring-yellow-400"));
+
+      // Selecciona el verbo y agrégale un anillo de selección
+      btn.classList.add("ring-4", "ring-yellow-400");
+      selectedVerbId = btn.getAttribute("data-id");
+    }
+
+    // Función para seleccionar un significado
+    function selectMeaning(btn) {
+      // Verifica que se haya seleccionado un phrasal verb primero
+      if (!selectedVerbId) {
+        alert("Primero selecciona un phrasal verb.");
+        return;
+      }
+      // Ignora si el significado ya está emparejado
+      if (btn.classList.contains("matched")) return;
+
+      const selectedMeaningId = btn.getAttribute("data-id");
+
+      // Encuentra el botón del phrasal verb seleccionado
+      const allVerbs = document.querySelectorAll("#verbContainer button");
+      let selectedVerbButton = null;
+      allVerbs.forEach(b => {
+        if (b.getAttribute("data-id") === selectedVerbId) {
+          selectedVerbButton = b;
+        }
+      });
+
+      // Comprueba si el emparejamiento es correcto
+      if (selectedVerbId === selectedMeaningId) {
+        // Acierto: marcar con color verde (clase "matched")
+        btn.classList.add("matched");
+        selectedVerbButton.classList.add("matched");
+        selectedVerbButton.disabled = true;
+        btn.disabled = true;
+        score++;
+        document.getElementById("score").textContent = score;
+        selectedVerbId = null;
+
+        if (score === phrasalVerbs.length) {
+          setTimeout(() => alert("¡Felicidades, emparejaste todos los phrasal verbs!"), 100);
+        }
+      } else {
+        // Error: marca con color rojo temporalmente en ambos botones
+        selectedVerbButton.classList.add("bg-red-500");
+        btn.classList.add("bg-red-500");
+        setTimeout(() => {
+          selectedVerbButton.classList.remove("bg-red-500", "ring-4", "ring-yellow-400");
+          btn.classList.remove("bg-red-500");
+          selectedVerbId = null;
+        }, 1000);
+        alert("No es correcto. Inténtalo de nuevo.");
+      }
+    }
+
+    // Inicia el juego al cargar la página
+    window.onload = initGame;
+  </script>
+</body>
+</html>
+
+
+
+
